@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api, openPdf } from "../api.js";
-import { useToast, Icon, fmtMoney } from "../components/ui.jsx";
+import { useToast, Icon, Pagination, fmtMoney } from "../components/ui.jsx";
 import { DateRangeBar, buildQuery } from "../components/filters.jsx";
 
 function fmtDateTime(v) {
@@ -20,10 +20,12 @@ export default function History() {
   const [status, setStatus] = useState("");
   const [vendorId, setVendorId] = useState("");
   const [range, setRange] = useState({ from: "", to: "" });
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   async function load() {
     setLoading(true);
-    const query = buildQuery({ q, status, vendor_id: vendorId, date_from: range.from, date_to: range.to });
+    const query = buildQuery({ q, status, vendor_id: vendorId, date_from: range.from, date_to: range.to, limit: 5000 });
     try { setRows(await api.get(`/history${query}`)); }
     catch (e) { toast.err(e.message); }
     finally { setLoading(false); }
@@ -31,6 +33,11 @@ export default function History() {
   useEffect(() => { api.get("/vendors").then(setVendors).catch(() => {}); }, []);
   useEffect(() => { const t = setTimeout(load, 220); return () => clearTimeout(t); },
     [q, status, vendorId, range.from, range.to]);
+  useEffect(() => { setPage(1); }, [q, status, vendorId, range.from, range.to, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  const curPage = Math.min(page, totalPages);
+  const paged = rows.slice((curPage - 1) * pageSize, curPage * pageSize);
 
   const totals = useMemo(() => {
     const sent = rows.filter((r) => r.status === "sent");
@@ -90,7 +97,7 @@ export default function History() {
                   <th style={{ textAlign: "right" }}>Actions</th>
                 </tr></thead>
                 <tbody>
-                  {rows.map((r) => (
+                  {paged.map((r) => (
                     <tr key={r.id}>
                       <td className="mono">{fmtDateTime(r.sent_at)}</td>
                       <td className="vname">{r.vendor_name || "—"}</td>
@@ -116,6 +123,10 @@ export default function History() {
               </table>
             </div>
           )}
+        {!loading && rows.length > 0 && (
+          <Pagination page={curPage} pageSize={pageSize} total={rows.length}
+            onPage={setPage} onPageSize={setPageSize} />
+        )}
       </div>
     </>
   );

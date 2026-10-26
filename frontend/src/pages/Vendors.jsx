@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api.js";
-import { useToast, Modal, Icon } from "../components/ui.jsx";
+import { useToast, Modal, Icon, Pagination } from "../components/ui.jsx";
 
 export default function Vendors() {
   const toast = useToast();
@@ -8,6 +8,8 @@ export default function Vendors() {
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [editing, setEditing] = useState(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   async function load() {
     setLoading(true);
@@ -16,6 +18,11 @@ export default function Vendors() {
     finally { setLoading(false); }
   }
   useEffect(() => { const t = setTimeout(load, 220); return () => clearTimeout(t); }, [q]);
+  useEffect(() => { setPage(1); }, [q, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  const curPage = Math.min(page, totalPages);
+  const paged = rows.slice((curPage - 1) * pageSize, curPage * pageSize);
 
   async function remove(v) {
     if (!confirm(`Delete vendor "${v.name}"?`)) return;
@@ -44,7 +51,7 @@ export default function Vendors() {
               <table className="data">
                 <thead><tr><th>Name</th><th>Email</th><th>Account #</th><th>Status</th><th style={{ textAlign: "right" }}>Actions</th></tr></thead>
                 <tbody>
-                  {rows.map((v) => (
+                  {paged.map((v) => (
                     <tr key={v.id}>
                       <td className="vname">{v.name}</td>
                       <td className="vsub">{v.email || "—"}</td>
@@ -66,6 +73,10 @@ export default function Vendors() {
               </table>
             </div>
           )}
+        {!loading && rows.length > 0 && (
+          <Pagination page={curPage} pageSize={pageSize} total={rows.length}
+            onPage={setPage} onPageSize={setPageSize} />
+        )}
       </div>
 
       {editing && <VendorForm vendor={editing.id ? editing : null} onClose={() => setEditing(null)}

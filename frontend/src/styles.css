@@ -213,3 +213,17 @@ table.data tr:hover td { background: #fafbfe; }
 @media (max-width: 560px) { .custom { width: 100%; } .custom .input-date { flex: 1; } }
 
 .tabs { display: flex; gap: 7px; }
+
+/* ---------- Pagination ---------- */
+.pager { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: space-between;
+  padding: 14px 18px; border-top: 1px solid var(--border); }
+.pager-info { color: var(--muted); font-size: 13px; }
+.pager-controls { display: flex; align-items: center; gap: 5px; }
+.pg { min-width: 34px; height: 34px; padding: 0 9px; border: 1px solid var(--border); background: #fff;
+  border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--navy); }
+.pg:hover:not(:disabled):not(.pg-on) { background: #f1f1f2; }
+.pg:disabled { opacity: .4; cursor: not-allowed; }
+.pg-on { background: var(--navy); border-color: var(--navy); color: #fff; }
+.pg-ellipsis { color: var(--muted); padding: 0 4px; }
+.pager-size { width: auto; padding: 7px 10px; font-size: 13px; }
+@media (max-width: 560px) { .pager { justify-content: center; } .pager-info { width: 100%; text-align: center; } }

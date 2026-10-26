@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api, openPdf } from "../api.js";
-import { useToast, Modal, Icon, fmtMoney, fmtDate } from "../components/ui.jsx";
+import { useToast, Modal, Icon, Pagination, fmtMoney, fmtDate } from "../components/ui.jsx";
 import { DateRangeBar, buildQuery } from "../components/filters.jsx";
 import ConfirmationForm from "./ConfirmationForm.jsx";
 
@@ -18,10 +18,12 @@ export default function Confirmations() {
   const [range, setRange] = useState({ from: "", to: "" });
   const [editing, setEditing] = useState(null);   // confirmation object or {} for new
   const [sendingId, setSendingId] = useState(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   async function load() {
     setLoading(true);
-    const query = buildQuery({ q, status, vendor_id: vendorId, date_from: range.from, date_to: range.to });
+    const query = buildQuery({ q, status, vendor_id: vendorId, date_from: range.from, date_to: range.to, limit: 5000 });
     try {
       const [list, sum] = await Promise.all([
         api.get(`/confirmations${query}`),
@@ -35,6 +37,11 @@ export default function Confirmations() {
   useEffect(() => { api.get("/vendors").then(setVendors).catch(() => {}); }, []);
   useEffect(() => { const t = setTimeout(load, 220); return () => clearTimeout(t); },
     [q, status, vendorId, range.from, range.to]);
+  useEffect(() => { setPage(1); }, [q, status, vendorId, range.from, range.to, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  const curPage = Math.min(page, totalPages);
+  const paged = rows.slice((curPage - 1) * pageSize, curPage * pageSize);
 
   async function send(row) {
     if (!row.vendor_email) { toast.err("This vendor has no email address."); return; }
@@ -110,7 +117,7 @@ export default function Confirmations() {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((r) => (
+                  {paged.map((r) => (
                     <tr key={r.id}>
                       <td className="mono">{fmtDate(r.date)}</td>
                       <td>
@@ -141,6 +148,10 @@ export default function Confirmations() {
               </table>
             </div>
           )}
+        {!loading && rows.length > 0 && (
+          <Pagination page={curPage} pageSize={pageSize} total={rows.length}
+            onPage={setPage} onPageSize={setPageSize} />
+        )}
       </div>
 
       {editing && (

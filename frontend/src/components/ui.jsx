@@ -67,3 +67,43 @@ export const Icon = {
   doc: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>,
   empty: (p) => <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>,
 };
+
+/* ---------- Pagination ---------- */
+function pageItems(page, pages) {
+  const out = [];
+  const add = (v) => out.push(v);
+  if (pages <= 7) { for (let i = 1; i <= pages; i++) add(i); return out; }
+  add(1);
+  if (page > 3) add("…");
+  for (let i = Math.max(2, page - 1); i <= Math.min(pages - 1, page + 1); i++) add(i);
+  if (page < pages - 2) add("…");
+  add(pages);
+  return out;
+}
+
+export function Pagination({ page, pageSize, total, onPage, onPageSize, sizes = [25, 50, 100] }) {
+  const pages = Math.max(1, Math.ceil(total / pageSize));
+  const cur = Math.min(page, pages);
+  const from = total === 0 ? 0 : (cur - 1) * pageSize + 1;
+  const to = Math.min(total, cur * pageSize);
+  return (
+    <div className="pager">
+      <div className="pager-info">
+        Showing <strong>{from}</strong>–<strong>{to}</strong> of <strong>{total}</strong>
+      </div>
+      <div className="pager-controls">
+        <button className="pg" disabled={cur <= 1} onClick={() => onPage(cur - 1)} aria-label="Previous">‹</button>
+        {pageItems(cur, pages).map((it, i) =>
+          it === "…" ? <span key={`e${i}`} className="pg-ellipsis">…</span> :
+            <button key={it} className={`pg ${it === cur ? "pg-on" : ""}`} onClick={() => onPage(it)}>{it}</button>
+        )}
+        <button className="pg" disabled={cur >= pages} onClick={() => onPage(cur + 1)} aria-label="Next">›</button>
+      </div>
+      {onPageSize && (
+        <select className="select pager-size" value={pageSize} onChange={(e) => onPageSize(Number(e.target.value))}>
+          {sizes.map((s) => <option key={s} value={s}>{s} / page</option>)}
+        </select>
+      )}
+    </div>
+  );
+}
