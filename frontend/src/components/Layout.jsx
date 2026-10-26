@@ -22,7 +22,7 @@ export default function Layout() {
     <div className="shell">
       <aside className={`sidebar ${open ? "open" : ""}`}>
         <div className="brand">
-          <div className="logo">2M</div>
+          <div className="logo"><span className="r">2</span>M</div>
           <div>
             <div className="name">Invoicer</div>
             <div className="sub">ACH Confirmations</div>

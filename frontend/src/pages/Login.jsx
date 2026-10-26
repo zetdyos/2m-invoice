@@ -21,7 +21,7 @@ export default function Login() {
   return (
     <div className="login-wrap">
       <div className="login-art">
-        <div className="logo">2M</div>
+        <div className="logo"><span className="r">2</span>M</div>
         <div>
           <h2>ACH payment confirmations, sent in seconds.</h2>
           <p>Create, track and email ACH confirmations to your vendors with a professional PDF on every send.</p>
