@@ -1,0 +1,5 @@
+# Reinstalado en cada servidor (no se versiona)
+backend/.venv/
+frontend/node_modules/
+__pycache__/
+*.pyc
